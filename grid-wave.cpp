@@ -29,6 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "posegrid.hpp"
 #include "wave.hpp"
 #include <stdio.h>
 #include <cmath>
@@ -45,6 +46,8 @@ int main(int argc, char ** argv)
   double tmax(3.0);
   int nt(20);
   
+  Posegrid grid(-1.0, 1.0, 20, -0.4, 0.4, 20, 20);
+  
   printf("# base t segment mu x y theta\n");
   for (int ib(0); ib <= nb; ++ib) {
     double const base(b0 + ib * (b1 - b0) / nb);
@@ -53,7 +56,8 @@ int main(int argc, char ** argv)
 	double const mu((double) imu / nmu);
 	for (int it(0); it <= nt; ++it) {
 	  double const t(tmax * it / nt);
-	  Pose const pp = computeWave(base, iseg, mu, t);
+	  Pose const real(computeWave(base, iseg, mu, t));
+	  Pose const & pp(grid.closest(real));
 	  printf("%8g  %8g  %d  %8g    %8g  %8g  %8g\n", base, t, iseg, mu, pp.x(), pp.y(), pp.theta());
 	}
 	printf("\n");

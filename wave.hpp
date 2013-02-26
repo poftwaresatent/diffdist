@@ -29,40 +29,63 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wave.hpp"
-#include <stdio.h>
-#include <cmath>
+#ifndef DIFFDIST_WAVE_HPP
+#define DIFFDIST_WAVE_HPP
 
-using namespace diffdist;
+#include "pose.hpp"
 
 
-int main(int argc, char ** argv)
-{
-  double b0(0.25);
-  double b1(1.5);
-  int nb(5);
-  int nmu(20);
-  double tmax(3.0);
-  int nt(20);
+namespace diffdist {
   
-  printf("# base t segment mu x y theta\n");
-  for (int ib(0); ib <= nb; ++ib) {
-    double const base(b0 + ib * (b1 - b0) / nb);
-    for (int iseg(0); iseg < 4; ++iseg) {
-      for (int imu(0); imu <= nmu; ++imu) {
-	double const mu((double) imu / nmu);
-	for (int it(0); it <= nt; ++it) {
-	  double const t(tmax * it / nt);
-	  Pose const pp = computeWave(base, iseg, mu, t);
-	  printf("%8g  %8g  %d  %8g    %8g  %8g  %8g\n", base, t, iseg, mu, pp.x(), pp.y(), pp.theta());
-	}
-	printf("\n");
-      }
+  
+  inline Pose computeWaveSolution1(double base, double mu, double t) {
+    double const kappa((1.0 - 2.0 * mu) / base);
+    if (fabs(kappa) < 1e-6) {
+      Pose pp(0.5 * t, 0.0, 0.0);
+      return pp;
     }
-    printf("\n");
+    Pose pp(1.0 / kappa, t * (1.0 - 2.0 * mu) / 2.0 / base);
+    return pp;
   }
   
-  printf("#  set view equal xy\n"
-	 "#  set hidden3d\n"
-	 "#  splot 'data' u 5:6:7 w l lc 0\n");
+  
+  inline Pose computeWaveSolution2(double base, double mu, double t) {
+    Pose pp(base * (1.0 - 2.0 * mu), t / 2.0 / base);
+    return pp;
+  }
+  
+  
+  inline Pose computeWaveSolution3(double base, double mu, double t) {
+    Pose pp(base * (2.0 * mu - 1.0), -t / 2.0 / base);
+    return pp;
+  }
+  
+  
+  inline Pose computeWaveSolution4(double base, double mu, double t) {
+    double const kappa((1.0 - 2.0 * mu) / base);
+    if (fabs(kappa) < 1e-6) {
+      Pose pp(-0.5 * t, 0.0, 0.0);
+      return pp;
+    }
+    Pose pp(1.0 / kappa, t * (2.0 * mu - 1.0) / 2.0 / base);
+    return pp;
+  }
+  
+  
+  inline Pose computeWave(double base, int segment, double mu, double t) {
+    switch (segment % 4) {
+    case 0:
+      return computeWaveSolution1(base, mu, t);
+    case 1:
+      return computeWaveSolution3(base, 1.0 - mu, t);
+    case 2:
+      return computeWaveSolution4(base, mu, t);
+      /* default:
+	 fall through */
+    }
+    return computeWaveSolution2(base, 1.0 - mu, t);
+  }
+  
 }
+
+#endif // DIFFDIST_WAVE_HPP

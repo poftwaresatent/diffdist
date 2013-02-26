@@ -29,40 +29,60 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wave.hpp"
-#include <stdio.h>
-#include <cmath>
+#ifndef DIFFDIST_POSEGRID_HPP
+#define DIFFDIST_POSEGRID_HPP
 
-using namespace diffdist;
+#include "pose.hpp"
 
-
-int main(int argc, char ** argv)
-{
-  double b0(0.25);
-  double b1(1.5);
-  int nb(5);
-  int nmu(20);
-  double tmax(3.0);
-  int nt(20);
+namespace diffdist {
   
-  printf("# base t segment mu x y theta\n");
-  for (int ib(0); ib <= nb; ++ib) {
-    double const base(b0 + ib * (b1 - b0) / nb);
-    for (int iseg(0); iseg < 4; ++iseg) {
-      for (int imu(0); imu <= nmu; ++imu) {
-	double const mu((double) imu / nmu);
-	for (int it(0); it <= nt; ++it) {
-	  double const t(tmax * it / nt);
-	  Pose const pp = computeWave(base, iseg, mu, t);
-	  printf("%8g  %8g  %d  %8g    %8g  %8g  %8g\n", base, t, iseg, mu, pp.x(), pp.y(), pp.theta());
-	}
-	printf("\n");
+  class Posegrid
+  {
+  public:
+    struct index {
+      index(size_t ix, size_t iy, size_t itheta);
+      size_t ix, iy, itheta;
+    };
+    
+    Posegrid(double x0, double x1, size_t nx,
+	     double y0, double y1, size_t ny,
+	     size_t ntheta);
+    
+    ~Posegrid();
+    
+    static inline double normangle(double theta) {
+      theta = fmod(theta, 2.0 * M_PI);
+      if (theta < 0.0) {
+	return theta + 2.0 * M_PI;
       }
+      return theta;
     }
-    printf("\n");
-  }
+    
+    Pose const & get(size_t ix, size_t iy, size_t itheta) const
+    { return *pose_[ix][iy][itheta]; }
+    
+    Pose const & get(index const & idx) const
+    { return *pose_[idx.ix][idx.iy][idx.itheta]; }
+    
+    index snap(double xx, double yy, double theta) const;
+    
+    inline index snap(Pose const & pose) const
+    { return snap(pose.x(), pose.y(), pose.theta()); }
+    
+    inline Pose const & closest(Pose const & pose) const
+    { return get(snap(pose.x(), pose.y(), pose.theta())); }
+    
+    size_t const nx_;
+    size_t const ny_;
+    size_t const ntheta_;
+    
+  private:
+    double x0_, x1_, dx_;
+    double y0_, y1_, dy_;
+    double dtheta_;
+    vector<vector<vector<Pose*> > > pose_;
+  };
   
-  printf("#  set view equal xy\n"
-	 "#  set hidden3d\n"
-	 "#  splot 'data' u 5:6:7 w l lc 0\n");
 }
+
+#endif // DIFFDIST_POSEGRID_HPP

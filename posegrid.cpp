@@ -29,40 +29,73 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wave.hpp"
-#include <stdio.h>
-#include <cmath>
+#include "posegrid.hpp"
 
-using namespace diffdist;
-
-
-int main(int argc, char ** argv)
-{
-  double b0(0.25);
-  double b1(1.5);
-  int nb(5);
-  int nmu(20);
-  double tmax(3.0);
-  int nt(20);
+namespace diffdist {
   
-  printf("# base t segment mu x y theta\n");
-  for (int ib(0); ib <= nb; ++ib) {
-    double const base(b0 + ib * (b1 - b0) / nb);
-    for (int iseg(0); iseg < 4; ++iseg) {
-      for (int imu(0); imu <= nmu; ++imu) {
-	double const mu((double) imu / nmu);
-	for (int it(0); it <= nt; ++it) {
-	  double const t(tmax * it / nt);
-	  Pose const pp = computeWave(base, iseg, mu, t);
-	  printf("%8g  %8g  %d  %8g    %8g  %8g  %8g\n", base, t, iseg, mu, pp.x(), pp.y(), pp.theta());
-	}
-	printf("\n");
-      }
-    }
-    printf("\n");
+  Posegrid::index::
+  index(size_t ix_, size_t iy_, size_t itheta_)
+    : ix(ix_), iy(iy_), itheta(itheta_)
+  {
   }
   
-  printf("#  set view equal xy\n"
-	 "#  set hidden3d\n"
-	 "#  splot 'data' u 5:6:7 w l lc 0\n");
+  
+  Posegrid::
+  Posegrid(double x0, double x1, size_t nx,
+	   double y0, double y1, size_t ny,
+	   size_t ntheta)
+    : nx_(nx), ny_(ny), ntheta_(ntheta),
+      x0_(x0), x1_(x1), dx_((x1_ - x0) / (nx - 1)),
+      y0_(y0), y1_(y1), dy_((y1_ - y0) / (ny - 1)),
+      dtheta_(2.0 * M_PI / ntheta) // theta wraps around, thus no "-1" here
+  {
+    pose_.resize(nx);
+    for (size_t ix(0); ix < nx; ++ix) {
+      pose_[ix].resize(ny);
+      for (size_t iy(0); iy < ny; ++iy) {
+	pose_[ix][iy].resize(ntheta);
+	for (size_t itheta(0); itheta < ntheta; ++itheta) {
+	  pose_[ix][iy][itheta] = new Pose(x0 + ix * dx_, y0 + iy * dy_, itheta * dtheta_);
+	}
+      }
+    }
+  }
+  
+  
+  Posegrid::
+  ~Posegrid()
+  {
+    for (size_t ix(0); ix < nx_; ++ix) {
+      for (size_t iy(0); iy < ny_; ++iy) {
+	for (size_t itheta(0); itheta < ntheta_; ++itheta) {
+	  delete pose_[ix][iy][itheta];
+	}
+      }
+    }
+  }
+  
+  
+  Posegrid::index Posegrid::
+  snap(double xx, double yy, double theta) const
+  {
+    if (xx < x0_) {
+      xx = x0_;
+    }
+    else if (xx > x1_) {
+      xx = x1_;
+    }
+
+    if (yy < y0_) {
+      yy = y0_;
+    }
+    else if (yy > y1_) {
+      yy = y1_;
+    }
+    
+    index idx(static_cast<size_t>(rint((xx - x0_) / dx_)),
+	      static_cast<size_t>(rint((yy - y0_) / dy_)),
+	      static_cast<size_t>(rint(normangle(theta) / dtheta_)));
+    return idx;
+  }
+  
 }
