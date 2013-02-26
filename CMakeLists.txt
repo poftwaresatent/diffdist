@@ -38,46 +38,46 @@ endif (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 if (APPLE)
   include_directories (
     /opt/local/include
-#    /opt/local/include/eigen3
+    /opt/local/include/eigen3
     )
   list (APPEND CMAKE_REQUIRED_INCLUDES
     /opt/local/include
-#    /opt/local/include/eigen3
+    /opt/local/include/eigen3
     )
 endif (APPLE)
 
-# include_directories (
-#   /usr/include/eigen3
-#   )
-# list (APPEND
-#   CMAKE_REQUIRED_INCLUDES
-#   /usr/include/eigen3
-#   )
-# 
-# if (EIGEN3_DIR)
-#   list (APPEND CMAKE_REQUIRED_INCLUDES
-#     ${EIGEN3_DIR}/include
-#     ${EIGEN3_DIR}
-#     ${EIGEN3_DIR}/include/eigen3
-#     ${EIGEN3_DIR}/eigen3
-#     )
-#   include_directories (
-#     ${EIGEN3_DIR}/include
-#     ${EIGEN3_DIR}
-#     ${EIGEN3_DIR}/include/eigen3
-#     ${EIGEN3_DIR}/
-#     eigen3
-#     )
-# endif (EIGEN3_DIR)
-# 
-# include (CheckIncludeFileCXX)
-# 
-# check_include_file_cxx (Eigen/Core HAVE_EIGEN3)
-# if (HAVE_EIGEN3)
-#   message ("*** found Eigen3 (required)")
-# else (HAVE_EIGEN3)
-#   message (FATAL_ERROR "Please install Eigen3 or set the EIGEN3_DIR variable to tell me where to find it.")
-# endif (HAVE_EIGEN3)
+include_directories (
+  /usr/include/eigen3
+  )
+list (APPEND
+  CMAKE_REQUIRED_INCLUDES
+  /usr/include/eigen3
+  )
+
+if (EIGEN3_DIR)
+  list (APPEND CMAKE_REQUIRED_INCLUDES
+    ${EIGEN3_DIR}/include
+    ${EIGEN3_DIR}
+    ${EIGEN3_DIR}/include/eigen3
+    ${EIGEN3_DIR}/eigen3
+    )
+  include_directories (
+    ${EIGEN3_DIR}/include
+    ${EIGEN3_DIR}
+    ${EIGEN3_DIR}/include/eigen3
+    ${EIGEN3_DIR}/
+    eigen3
+    )
+endif (EIGEN3_DIR)
+
+include (CheckIncludeFileCXX)
+
+check_include_file_cxx (Eigen/Core HAVE_EIGEN3)
+if (HAVE_EIGEN3)
+  message ("*** found Eigen3 (required)")
+else (HAVE_EIGEN3)
+  message (FATAL_ERROR "Please install Eigen3 or set the EIGEN3_DIR variable to tell me where to find it.")
+endif (HAVE_EIGEN3)
 
 # find_package(GTK2 REQUIRED gtk)
 # if (GTK2_FOUND)
@@ -87,11 +87,13 @@ endif (APPLE)
 #   message (FATAL_ERROR "Please install GTK2 development files (or tweak build sys to skip GTK-dependent stuff).")
 # endif (GTK2_FOUND)
 
-# list (APPEND SRCS
-#   )
-# add_library (diffdist SHARED ${SRCS})
+list (APPEND SRCS
+  pose.cpp
+  )
+add_library (diffdist SHARED ${SRCS})
 # if (APPLE)
 #   target_link_libraries (diffdist ${GTK2_LIBRARIES})
 # endif (APPLE)
 
 add_executable (unit-wave unit-wave.cpp)
+target_link_libraries (unit-wave diffdist)

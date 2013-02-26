@@ -29,27 +29,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "pose.hpp"
 #include <stdio.h>
 #include <cmath>
 
-
-class Pose
-{
-public:
-  Pose(double x, double y, double theta)
-    : x_(x), y_(y), theta_(theta)
-  {
-  }
-  
-  Pose(double radius, double theta)
-    : x_(radius * sin(theta)),
-      y_(radius * (1.0 - cos(theta))),
-      theta_(theta)
-  {
-  }
-  
-  double x_, y_, theta_;
-};
+using namespace diffdist;
 
 
 static Pose computeSolution1(double base, double mu, double t) {
@@ -119,7 +103,7 @@ int main(int argc, char ** argv)
 	for (int it(0); it <= nt; ++it) {
 	  double const t(tmax * it / nt);
 	  Pose const pp = compute(base, iseg, mu, t);
-	  printf("%8g  %8g  %d  %8g    %8g  %8g  %8g\n", base, t, iseg, mu, pp.x_, pp.y_, pp.theta_);
+	  printf("%8g  %8g  %d  %8g    %8g  %8g  %8g\n", base, t, iseg, mu, pp.x(), pp.y(), pp.theta());
 	}
 	printf("\n");
       }
