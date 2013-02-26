@@ -61,6 +61,17 @@ struct Entry {
 
 static heap_t * heap;
 static vector<Sprite> sprite;
+static vector<vector<vector<Entry> > > lookup;
+static size_t const nn(10);
+static bool interrupt(false);
+
+static void handle(int signal)
+{
+  if (interrupt) {
+    errx(EXIT_FAILURE, "handle(%d)", signal);
+  }
+  interrupt = true;
+}
 
 
 static void cleanup()
@@ -89,21 +100,29 @@ static void init_sprite(double base, int nmu, double tmax, int nt)
 
 int main(int argc, char ** argv)
 {
+  if (SIG_ERR == signal(SIGINT, handle)) {
+    err (EXIT_FAILURE, "signal");
+  }
+  
   if (0 != atexit(cleanup)) {
     err(EXIT_FAILURE, "atexit");
   }
   
-  heap = maxheap_create(1000);
+  heap = minheap_create(1000);
   if ( ! heap) {
     err(EXIT_FAILURE, "maxheap_create");
   }
   
+  printf("# initializing sprite\n");
+  fflush(stdout);
   init_sprite(1.25, 50, 5.0, 50);
   
-  static size_t const nn(10);
+  printf("# allocating grid\n");
+  fflush(stdout);
   Posegrid grid(-1.6, 1.6, nn, -1.6, 1.6, nn, nn);
   
-  vector<vector<vector<Entry> > > lookup;
+  printf("# initializing lookup\n");
+  fflush(stdout);
   lookup.resize(nn);
   for (size_t ix(0); ix < nn; ++ix) {
     lookup[ix].resize(nn);
@@ -118,16 +137,19 @@ int main(int argc, char ** argv)
   lookup[idx.ix][idx.iy][idx.itheta].tt_ = 0.0;
   lookup[idx.ix][idx.iy][idx.itheta].key_ = 0.0;
   
+  printf("# propagating...\n");
+  fflush(stdout);
   if (0 != heap_insert(heap, 0.0, &lookup[idx.ix][idx.iy][idx.itheta])) {
     err(EXIT_FAILURE, "heap_insert");
   }
   
-  for (Entry * src((Entry*) heap_pop(heap)); src != 0; src = (Entry*) heap_pop(heap)) {
+  for (Entry * src((Entry*) heap_pop(heap)); (src != 0) && ( ! interrupt); src = (Entry*) heap_pop(heap)) {
     
     printf("# %zu: %g\n", HEAP_LENGTH(heap), src->tt_);
+    fflush(stdout);
     
     src->key_ = -1.0;
-    for (size_t is(1); is < sprite.size(); ++is) {
+    for (size_t is(1); (is < sprite.size()) && ( ! interrupt); ++is) {
       
       idx = grid.snap(*src->pose_ + sprite[is]);
       Pose const & candidate(grid.get(idx));
@@ -163,6 +185,7 @@ int main(int argc, char ** argv)
 	printf("%8g  ", lookup[ix][iy][itheta].tt_ == numeric_limits<double>::max() ? -1.0 : lookup[ix][iy][itheta].tt_);
       }
       printf("\n");
+      fflush(stdout);
     }
   }
 }
