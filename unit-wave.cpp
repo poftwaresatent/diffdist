@@ -29,120 +29,105 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <iostream>
+#include <stdio.h>
 #include <cmath>
-
-using namespace std;
 
 
 class Pose
 {
 public:
+  Pose(double x, double y, double theta)
+    : x_(x), y_(y), theta_(theta)
+  {
+  }
+  
+  Pose(double radius, double theta)
+    : x_(radius * sin(theta)),
+      y_(radius * (1.0 - cos(theta))),
+      theta_(theta)
+  {
+  }
+  
   double x_, y_, theta_;
-  
-  void rtr1(double B, double mu, double t) {
-    double const kappa((1.0 - 2.0 * mu) / B);
-    if (fabs(kappa) < 1e-6) {
-      x_ = 0.5 * t;
-      y_ = 0.0;
-      theta_ = 0.0;
-      return;
-    }
-    
-    double const R(1.0 / kappa);
-    double const bdot((1.0 - 2.0 * mu) / 2.0 / B);
-    theta_ = bdot * t;
-    x_ = R * sin(theta_);
-    y_ = R * (1.0 - cos(theta_));
-  }
-  
-  void rtr2(double B, double mu, double t) {
-    double const R(B * (1.0 - 2.0 * mu));
-    double const bdot(1.0 / 2.0 / B);
-    theta_ = bdot * t;
-    x_ = R * sin(theta_);
-    y_ = R * (1.0 - cos(theta_));
-  }
-  
-  void rtr3(double B, double mu, double t) {
-    double const R(B * (2.0 * mu - 1.0));
-    double const bdot(-1.0 / 2.0 / B);
-    theta_ = bdot * t;
-    x_ = R * sin(theta_);
-    y_ = R * (1.0 - cos(theta_));
-  }
-  
-  void rtr4(double B, double mu, double t) {
-    double const kappa((1.0 - 2.0 * mu) / B);
-    if (fabs(kappa) < 1e-6) {
-      x_ = -0.5 * t;
-      y_ = 0.0;
-      theta_ = 0.0;
-      return;
-    }
-    
-    double const R(1.0 / kappa);
-    double const bdot((2.0 * mu - 1.0) / 2.0 / B);
-    theta_ = bdot * t;
-    x_ = R * sin(theta_);
-    y_ = R * (1.0 - cos(theta_));
-  }
 };
+
+
+static Pose computeSolution1(double base, double mu, double t) {
+  double const kappa((1.0 - 2.0 * mu) / base);
+  if (fabs(kappa) < 1e-6) {
+    Pose pp(0.5 * t, 0.0, 0.0);
+    return pp;
+  }
+  Pose pp(1.0 / kappa, t * (1.0 - 2.0 * mu) / 2.0 / base);
+  return pp;
+}
+
+  
+static Pose computeSolution2(double base, double mu, double t) {
+  Pose pp(base * (1.0 - 2.0 * mu), t / 2.0 / base);
+  return pp;
+}
+
+  
+static Pose computeSolution3(double base, double mu, double t) {
+  Pose pp(base * (2.0 * mu - 1.0), -t / 2.0 / base);
+  return pp;
+}
+
+  
+static Pose computeSolution4(double base, double mu, double t) {
+  double const kappa((1.0 - 2.0 * mu) / base);
+  if (fabs(kappa) < 1e-6) {
+    Pose pp(-0.5 * t, 0.0, 0.0);
+    return pp;
+  }
+  Pose pp(1.0 / kappa, t * (2.0 * mu - 1.0) / 2.0 / base);
+  return pp;
+}
+
+
+static Pose compute(double base, int segment, double mu, double t) {
+  switch (segment % 4) {
+  case 0:
+    return computeSolution1(base, mu, t);
+  case 1:
+    return computeSolution3(base, 1.0 - mu, t);
+  case 2:
+    return computeSolution4(base, mu, t);
+    /* default:
+       fall through */
+  }
+  return computeSolution2(base, 1.0 - mu, t);
+}
 
 
 int main(int argc, char ** argv)
 {
-  double const B(1.0);
-  size_t const nmu(20);
-  double const tmax(3.0);
-  size_t const nt(20);
-  Pose pp;
+  double b0(0.25);
+  double b1(1.5);
+  int nb(5);
+  int nmu(20);
+  double tmax(3.0);
+  int nt(20);
   
-  cout << "# case 1: t mu x y theta\n";
-  for (size_t imu(0); imu <= nmu; ++imu) {
-    double const mu((double) imu / nmu);
-    for (size_t it(0); it <= nt; ++it) {
-      double const t(tmax * it / nt);
-      pp.rtr1(B, mu, t);
-      cout << t << "  " << mu << "  " << pp.x_ << "  " << pp.y_ << "  " << pp.theta_ << "\n";
+  printf("# base t segment mu x y theta\n");
+  for (int ib(0); ib <= nb; ++ib) {
+    double const base(b0 + ib * (b1 - b0) / nb);
+    for (int iseg(0); iseg < 4; ++iseg) {
+      for (int imu(0); imu <= nmu; ++imu) {
+	double const mu((double) imu / nmu);
+	for (int it(0); it <= nt; ++it) {
+	  double const t(tmax * it / nt);
+	  Pose const pp = compute(base, iseg, mu, t);
+	  printf("%8g  %8g  %d  %8g    %8g  %8g  %8g\n", base, t, iseg, mu, pp.x_, pp.y_, pp.theta_);
+	}
+	printf("\n");
+      }
     }
-    cout << "\n";
+    printf("\n");
   }
   
-  cout << "\n\n# case 2: t mu x y theta\n";
-  for (size_t imu(0); imu <= nmu; ++imu) {
-    double const mu((double) imu / nmu);
-    for (size_t it(0); it <= nt; ++it) {
-      double const t(tmax * it / nt);
-      pp.rtr2(B, mu, t);
-      cout << t << "  " << mu << "  " << pp.x_ << "  " << pp.y_ << "  " << pp.theta_ << "\n";
-    }
-    cout << "\n";
-  }
-  
-  cout << "\n# case 3: t mu x y theta\n";
-  for (size_t imu(0); imu <= nmu; ++imu) {
-    double const mu((double) imu / nmu);
-    for (size_t it(0); it <= nt; ++it) {
-      double const t(tmax * it / nt);
-      pp.rtr3(B, mu, t);
-      cout << t << "  " << mu << "  " << pp.x_ << "  " << pp.y_ << "  " << pp.theta_ << "\n";
-    }
-    cout << "\n";
-  }
-  
-  cout << "\n# case 4: t mu x y theta\n";
-  for (size_t imu(0); imu <= nmu; ++imu) {
-    double const mu((double) imu / nmu);
-    for (size_t it(0); it <= nt; ++it) {
-      double const t(tmax * it / nt);
-      pp.rtr4(B, mu, t);
-      cout << t << "  " << mu << "  " << pp.x_ << "  " << pp.y_ << "  " << pp.theta_ << "\n";
-    }
-    cout << "\n";
-  }
-  
-  cout << "#  set view equal xy\n"
-       << "#  set hidden3d\n"
-       << "#  splot 'data' u 3:4:5 w l\n";
+  printf("#  set view equal xy\n"
+	 "#  set hidden3d\n"
+	 "#  splot 'data' u 5:6:7 w l lc 0\n");
 }
