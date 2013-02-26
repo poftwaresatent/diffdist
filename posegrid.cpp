@@ -55,7 +55,7 @@ namespace diffdist {
       for (size_t iy(0); iy < ny; ++iy) {
 	pose_[ix][iy].resize(ntheta);
 	for (size_t itheta(0); itheta < ntheta; ++itheta) {
-	  pose_[ix][iy][itheta] = new Pose(x0 + ix * dx_, y0 + iy * dy_, itheta * dtheta_);
+	  pose_[ix][iy][itheta] = new Pose(x0 + ix * dx_, y0 + iy * dy_, itheta * dtheta_ - M_PI);
 	}
       }
     }
@@ -94,7 +94,21 @@ namespace diffdist {
     
     index idx(static_cast<size_t>(rint((xx - x0_) / dx_)),
 	      static_cast<size_t>(rint((yy - y0_) / dy_)),
-	      static_cast<size_t>(rint(normangle(theta) / dtheta_)));
+	      static_cast<size_t>(rint((normangle(theta) + M_PI) / dtheta_)));
+    
+    if (idx.itheta >= ntheta_) { // can happen close to 2.0 * M_PI because of wraparound
+      idx.itheta = 0;
+    }
+    
+    if (idx.ix >= nx_) {
+      fprintf (stderr, "Posegrid::snap(%g  %g  %g): ix = %zu out of range (%zu)\n",
+	       xx, yy, theta, idx.ix, nx_);
+    }
+    if (idx.iy >= ny_) {
+      fprintf (stderr, "Posegrid::snap(%g  %g  %g): iy = %zu out of range (%zu)\n",
+	       xx, yy, theta, idx.iy, ny_);
+    }
+    
     return idx;
   }
   

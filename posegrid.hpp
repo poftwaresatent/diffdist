@@ -52,8 +52,11 @@ namespace diffdist {
     
     static inline double normangle(double theta) {
       theta = fmod(theta, 2.0 * M_PI);
-      if (theta < 0.0) {
+      if (theta <= -M_PI) {
 	return theta + 2.0 * M_PI;
+      }
+      if (theta > M_PI) {
+	return theta - 2.0 * M_PI;
       }
       return theta;
     }

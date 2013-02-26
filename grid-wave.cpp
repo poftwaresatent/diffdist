@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
   double tmax(3.0);
   int nt(20);
   
-  Posegrid grid(-1.0, 1.0, 20, -0.4, 0.4, 20, 20);
+  Posegrid grid(-1.6, 1.6, 100, -1.6, 1.6, 100, 100);
   
   printf("# base t segment mu x y theta\n");
   for (int ib(0); ib <= nb; ++ib) {
