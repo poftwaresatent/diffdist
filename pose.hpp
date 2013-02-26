@@ -39,15 +39,22 @@ namespace diffdist {
   class Pose
   {
   public:
+    Pose(Vector const & pos, double theta);
     Pose(double x, double y, double theta);
     Pose(double radius, double theta);
     
-    inline double x() const { return x_; }
-    inline double y() const { return y_; }
+    inline double x() const { return pos_[0]; }
+    inline double y() const { return pos_[1]; }
     inline double theta() const { return theta_; }
     
+    inline Pose operator + (Pose const & rhs) const {
+      Pose pp(t_ * rhs.pos_, theta_ + rhs.theta_);
+      return pp;
+    }
+    
   private:
-    double x_, y_, theta_;
+    Vector pos_;
+    double theta_;
     Transform t_;
   };
   

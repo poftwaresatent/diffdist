@@ -90,6 +90,7 @@ endif (HAVE_EIGEN3)
 list (APPEND SRCS
   pose.cpp
   posegrid.cpp
+  heap.c
   )
 add_library (diffdist SHARED ${SRCS})
 # if (APPLE)
@@ -101,3 +102,6 @@ target_link_libraries (unit-wave diffdist)
 
 add_executable (grid-wave grid-wave.cpp)
 target_link_libraries (grid-wave diffdist)
+
+add_executable (propagate propagate.cpp)
+target_link_libraries (propagate diffdist)

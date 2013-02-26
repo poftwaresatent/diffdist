@@ -33,23 +33,33 @@
 
 namespace diffdist {
   
+
+  Pose::
+  Pose(Vector const & pos, double theta)
+    : pos_(pos),
+      theta_(theta),
+      t_(Translation(pos[0], pos[1]) * Rotation(theta))
+  {
+  }
+  
+
   Pose::
   Pose(double x, double y, double theta)
-    : x_(x),
-      y_(y),
+    : pos_(2),
       theta_(theta),
       t_(Translation(x, y) * Rotation(theta))
   {
+    pos_[0] = x;
+    pos_[1] = y;
   }
   
   
   Pose::
   Pose(double radius, double theta)
-    : x_(radius * sin(theta)),
-      y_(radius * (1.0 - cos(theta))),
-      theta_(theta),
-      t_(Translation(x_, y_) * Rotation(theta))
+    : theta_(theta),
+      t_(Translation(radius * sin(theta), radius * (1.0 - cos(theta))) * Rotation(theta))
   {
+    pos_ = t_.translation();
   }
   
 }

@@ -33,8 +33,10 @@
 #define DIFFDIST_POSEGRID_HPP
 
 #include "pose.hpp"
+#include <vector>
 
 namespace diffdist {
+
   
   class Posegrid
   {

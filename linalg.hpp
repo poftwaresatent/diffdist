@@ -33,13 +33,11 @@
 #define DIFFDIST_LINALG_HPP
 
 #include <Eigen/Core>
-#include <Eigen/StdVector>
 #include <Eigen/Geometry>
 
 namespace diffdist {
   
-  typedef Eigen::VectorXd Vector;
-  typedef Eigen::MatrixXd Matrix;
+  typedef Eigen::Vector2d Vector;
   typedef Eigen::Isometry2d Transform;
   typedef Eigen::Rotation2Dd Rotation;
   typedef Eigen::Translation<double, 2> Translation;
