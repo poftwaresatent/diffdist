@@ -45,11 +45,11 @@ namespace diffdist {
   Posegrid::
   Posegrid(double x0, double x1, size_t nx,
 	   double y0, double y1, size_t ny,
-	   size_t ntheta)
+	   double theta0, double theta1, size_t ntheta)
     : nx_(nx), ny_(ny), ntheta_(ntheta),
       x0_(x0), x1_(x1), dx_((x1_ - x0) / (nx - 1)),
       y0_(y0), y1_(y1), dy_((y1_ - y0) / (ny - 1)),
-      dtheta_(2.0 * M_PI / ntheta) // theta wraps around, thus no "-1" here
+      theta0_(theta0), theta1_(theta1), dtheta_((theta1 - theta0) / ntheta)
   {
     pose_.resize(nx);
     for (size_t ix(0); ix < nx; ++ix) {
@@ -57,7 +57,7 @@ namespace diffdist {
       for (size_t iy(0); iy < ny; ++iy) {
 	pose_[ix][iy].resize(ntheta);
 	for (size_t itheta(0); itheta < ntheta; ++itheta) {
-	  pose_[ix][iy][itheta] = new Pose(x0 + ix * dx_, y0 + iy * dy_, itheta * dtheta_ - M_PI);
+	  pose_[ix][iy][itheta] = new Pose(x0 + ix * dx_, y0 + iy * dy_, theta0 + itheta * dtheta_);
 	}
       }
     }
@@ -96,7 +96,7 @@ namespace diffdist {
     
     index idx(static_cast<size_t>(rint((xx - x0_) / dx_)),
 	      static_cast<size_t>(rint((yy - y0_) / dy_)),
-	      static_cast<size_t>(rint((normangle(theta) + M_PI) / dtheta_)));
+	      static_cast<size_t>(rint((normangle(theta) - theta0_) / dtheta_)));
     
     if (idx.itheta >= ntheta_) { // can happen close to 2.0 * M_PI because of wraparound
       idx.itheta = 0;

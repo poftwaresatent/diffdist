@@ -48,7 +48,7 @@ namespace diffdist {
     
     Posegrid(double x0, double x1, size_t nx,
 	     double y0, double y1, size_t ny,
-	     size_t ntheta);
+	     double theta0, double theta1, size_t ntheta);
     
     ~Posegrid();
     
@@ -80,11 +80,17 @@ namespace diffdist {
     size_t const nx_;
     size_t const ny_;
     size_t const ntheta_;
+    double const x0_;
+    double const x1_;
+    double const dx_;
+    double const y0_;
+    double const y1_;
+    double const dy_;
+    double const theta0_;
+    double const theta1_;
+    double const dtheta_;
     
   private:
-    double x0_, x1_, dx_;
-    double y0_, y1_, dy_;
-    double dtheta_;
     vector<vector<vector<Pose*> > > pose_;
   };
   

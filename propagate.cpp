@@ -66,8 +66,9 @@ struct Entry {
 static heap_t * heap;
 static vector<Sprite, Eigen::aligned_allocator<Sprite> > sprite;
 static vector<vector<vector<Entry> > > lookup;
-static size_t const nn(100);
+static size_t const nn(25);
 static bool interrupt(false);
+
 
 static void handle(int signal)
 {
@@ -124,8 +125,16 @@ int main(int argc, char ** argv)
   
   printf("# allocating grid\n");
   fflush(stdout);
-  Posegrid grid(-1.6, 1.6, nn, -1.6, 1.6, nn, nn);
-  
+  Posegrid grid(0.0, 1.0, nn,
+		0.0, 1.0, nn,
+		0.0, M_PI, nn);
+
+  printf("\n");
+  for (size_t itheta(0); itheta < nn; ++itheta) {
+    printf("# splot 'file' matrix i %zu u (%g+$1*%g):(%g+$2*%g):3 w l lc 0 t '%g deg'\n",
+	   itheta, grid.x0_, grid.dx_, grid.y0_, grid.dy_, grid.theta0_ + itheta * grid.dtheta_ * 180.0 / M_PI);
+  }
+
   printf("# initializing lookup\n");
   fflush(stdout);
   lookup.resize(nn);
@@ -196,5 +205,11 @@ int main(int argc, char ** argv)
       printf("\n");
       fflush(stdout);
     }
+  }
+  
+  printf("\n");
+  for (size_t itheta(0); itheta < nn; ++itheta) {
+    printf("# splot 'file' matrix i %zu u (%g+$1*%g):(%g+$2*%g):3 w l lc 0 t '%g deg'\n",
+	   itheta, grid.x0_, grid.dx_, grid.y0_, grid.dy_, grid.theta0_ + itheta * grid.dtheta_ * 180.0 / M_PI);
   }
 }
