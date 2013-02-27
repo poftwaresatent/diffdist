@@ -59,6 +59,8 @@ namespace diffdist {
     double theta_;
     Transform t_;
   };
+
+  typedef vector<Pose, Eigen::aligned_allocator<Pose> > posevector_t;
   
 }
 

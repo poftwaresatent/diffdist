@@ -105,3 +105,6 @@ target_link_libraries (grid-wave diffdist)
 
 add_executable (propagate propagate.cpp)
 target_link_libraries (propagate diffdist)
+
+add_executable (butterfly butterfly.cpp)
+target_link_libraries (butterfly diffdist)
