@@ -39,6 +39,8 @@ namespace diffdist {
   class Pose
   {
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     Pose(Vector const & pos, double theta);
     Pose(double x, double y, double theta);
     Pose(double radius, double theta);

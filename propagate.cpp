@@ -34,11 +34,15 @@
 #include "heap.h"
 #include <stdlib.h>
 #include <err.h>
+#include <stdio.h>
+#include <signal.h>
 
 using namespace diffdist;
 
 
 struct Sprite : public Pose {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  
   Sprite(double tt, Pose const & pose)
     : Pose(pose), tt_(tt)
   {}
@@ -60,7 +64,7 @@ struct Entry {
 
 
 static heap_t * heap;
-static vector<Sprite> sprite;
+static vector<Sprite, Eigen::aligned_allocator<Sprite> > sprite;
 static vector<vector<vector<Entry> > > lookup;
 static size_t const nn(100);
 static bool interrupt(false);

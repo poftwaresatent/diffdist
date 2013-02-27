@@ -30,8 +30,10 @@
  */
 
 #include "posegrid.hpp"
+#include <stdio.h>
 
 namespace diffdist {
+
   
   Posegrid::index::
   index(size_t ix_, size_t iy_, size_t itheta_)
