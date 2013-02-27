@@ -62,7 +62,7 @@ struct Entry {
 static heap_t * heap;
 static vector<Sprite> sprite;
 static vector<vector<vector<Entry> > > lookup;
-static size_t const nn(10);
+static size_t const nn(100);
 static bool interrupt(false);
 
 static void handle(int signal)
@@ -70,6 +70,7 @@ static void handle(int signal)
   if (interrupt) {
     errx(EXIT_FAILURE, "handle(%d)", signal);
   }
+  fprintf(stderr, "# interrupting...\n");
   interrupt = true;
 }
 
@@ -176,6 +177,10 @@ int main(int argc, char ** argv)
       }
       dst->key_ = tt;
     }
+  }
+
+  if (interrupt) {
+    fprintf(stderr, "# ...interrupted\n");
   }
   
   for (size_t itheta(0); itheta < nn; ++itheta) {
